@@ -1,0 +1,14 @@
+{application, erlack_routing,
+ [{description, "Erlack Routing Middleware"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib,
+    ecgi
+   ]},
+  {included_applications, [inets]},
+  {env,[]},
+  {modules, []},
+  {licenses, ["Apache 2.0"]}
+ ]}.
