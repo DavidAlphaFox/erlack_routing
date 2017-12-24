@@ -703,6 +703,10 @@ format_segment(S, _) ->
 
 collect_dispatches_test_() ->
     [?_assertEqual(
+        {error,{not_found,[{root,none}]}},
+        collect_dispatches(
+          dict:from_list([]))),
+     ?_assertEqual(
         {error,{loop,[{root,{"x.erl",1}},{root,none}]}},
         collect_dispatches(
           dict:from_list(
@@ -721,6 +725,16 @@ collect_dispatches_test_() ->
           dict:from_list(
             [{root, [{{"x.erl", 1}, "", {endpoint, index}}]},
              {page, [{{"x.erl", 2}, "", {dispatch, root}}]}]
+           ))),
+     ?_assertEqual(
+        {ok,[{root,[{{"x.erl",1},[],{dispatch,page}},
+                    {{"x.erl",2},[],{dispatch,page}}]},
+             {page,[{{"x.erl",3},[],{endpoint,page}}]}]},
+        collect_dispatches(
+          dict:from_list(
+            [{root, [{{"x.erl", 1}, "", {dispatch, page}},
+                     {{"x.erl", 2}, "", {dispatch, page}}]},
+             {page, [{{"x.erl", 3}, "", {endpoint, page}}]}]
            )))].
 
 parse_rules_test_() ->

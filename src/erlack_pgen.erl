@@ -1,4 +1,4 @@
--module(erlack_peg).
+-module(erlack_pgen).
 
 -export([parse_transform/2]).
 

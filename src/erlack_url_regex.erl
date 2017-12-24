@@ -165,10 +165,13 @@ encode_range_test_() ->
     ].
 
 encode_test_() ->
-    [?_assertEqual([[$/]], encode([[$/]])),
+    [?_assertEqual([[{repeat, 1, 2, $/}]], encode([[{repeat, 1, 2, $/}]])),
+     ?_assertEqual([[$/]], encode([[{group, [[$/]]}]])),
+     ?_assertEqual([[$/]], encode([[$/]])),
      ?_assertEqual([[$a], [$%, $6, $1]], encode([[$a]])),
      ?_assertEqual([[$%, $8, $0]], encode([[16#80]])),
      ?_assertEqual([[$/]], encode([[{set, [{$/, $/}]}]])),
+     ?_assertEqual([[{set, [{$., $0}]}], [$%,$2,{set,[{$E,$E},{$e,$e}]}],[$%,$3,$0]], encode([[{set, [{$., $0}]}]])),
      ?_assertEqual([[$a], [$%, $6, $1]], encode([[{set, [{$a, $a}]}]])),
      ?_assertEqual([[$%, $8, $0]], encode([[{set, [{16#80, 16#80}]}]]))].
 

@@ -1,6 +1,6 @@
 -module(erlack_regex).
 
--compile({parse_transform, erlack_peg}).
+-compile({parse_transform, erlack_pgen}).
 
 -export(
    [ parse/1,
@@ -119,7 +119,7 @@ char([C|S])
   when C =/= $\\, C =/= $[, C =/= $] ->
     {ok, C, S};
 char([$\\, C|S])
-  when C =:= $\\, C =:= $[, C =:= $] ->
+  when C =:= $\\; C =:= $[; C =:= $] ->
     {ok, C, S}.
 
 
@@ -196,15 +196,20 @@ simplify_elem(E) ->
 -include_lib("eunit/include/eunit.hrl").
 
 re_test_() ->
-    [?_assertEqual({ok, [[$a],[$b],[$c]], []}, re("a|b|c")),
+    [?_assertEqual({ok, [[$\\]], []}, re("\\\\")),
+     ?_assertEqual({ok, [['.']], []}, re(".")),
+     ?_assertEqual({ok, [[$a],[$b],[$c]], []}, re("a|b|c")),
      ?_assertEqual({ok, [[$a,$b,$c]], []}, re("abc")),
      ?_assertEqual({ok, [[{repeat, 1, infinity, $a}]], []}, re("a+")),
+     ?_assertEqual({ok, [[{repeat, 0, infinity, $a}]], []}, re("a*")),
+     ?_assertEqual({ok, [[{repeat, 0, 1, $a}]], []}, re("a?")),
      ?_assertEqual({ok, [[{repeat, 0, 1, $a}]], []}, re("a{0,1}")),
      ?_assertEqual({ok, [[{repeat, 0, infinity, $a}]], []}, re("a{0,}")),
      ?_assertEqual({ok, [[{group, [[$a]]}]], []}, re("(a)")),
      ?_assertEqual({ok, [[{set, [{$0,$9},{$a,$a}]}]], []}, re("[0-9a]")),
      ?_assertEqual({ok, [[{set, [{$0,$9}]}]], []}, re("[0-56-9]")),
-     ?_assertEqual({ok, [[{set, [{$0,$9}]}]], []}, re("[0-65-9]"))].
+     ?_assertEqual({ok, [[{set, [{$0,$9}]}]], []}, re("[0-65-9]")),
+     ?_assertEqual({ok, [[{set, [{$\\,$\\}]}]], []}, re("[\\\\]"))].
 
 parse_test_() ->
     [?_assertEqual({ok, [[{set, [{$0,$9}]}]]}, parse("[0-4]|5|[6-9]")),
@@ -212,6 +217,8 @@ parse_test_() ->
      ?_assertEqual({ok, [[{set, [{$1,$1},{$3,$3},{$5,$5},{$a,$a},{$c,$c},{$e,$e}]}]]}, parse("(a|c|e)|(1|3|5)")),
      ?_assertEqual({ok, [[$a, $5]]}, parse("a[5-5]")),
      ?_assertEqual({ok, []}, parse("a[]")),
+     ?_assertEqual({ok, []}, parse("a([])")),
+     ?_assertEqual({ok, [[$a, {group, [[$b,$c],[$d,$e]]}]]}, parse("a((bc|de))")),
      ?_assertEqual({ok, [[$a, $b]]}, parse("(a)b"))].
 
 -endif.

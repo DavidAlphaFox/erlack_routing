@@ -103,11 +103,9 @@ normalize_tagged_states(List) ->
                   lists:foldl(
                     fun(X = {_, T1}, Acc = {_, T2}) ->
                             case {ordsets:is_subset(T1,T2), ordsets:is_subset(T2,T1)} of
-                                {true, true} ->
-                                    throw(inconsistent);
-                                {true, _} ->
+                                {true, false} ->
                                     Acc;
-                                {_, true} ->
+                                {false, true} ->
                                     X;
                                 _ ->
                                     throw(inconsistent)
@@ -127,6 +125,7 @@ normalize_tagged_states(List) ->
 merge_moves(List) ->
     erlack_group_map:compact(
       erlack_group_map:from_list(List)).
+
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
@@ -148,6 +147,25 @@ to_tagged_dfa_test_() ->
            {3, [{$a, $a}], 3}
           ],
           dict:from_list([{1, [{1, 2}]}]),
-          [3]))].
+          [3])),
+
+     ?_assertEqual(
+        {[{2,1},{1,1}],
+         [{2,{1,[],5}}],
+         [{2,[]},{1,[{[{$a,$a}],{2,[{1,[1,2]}]}}]}]},
+        to_tagged_dfa(
+          [{2, [{$a, $a}], 5},
+           {4, [{$a, $a}], 5}],
+          dict:from_list([{1,[{1,2},{1,3}]}, {3, [{2,4}]}]),
+          [5])),
+
+     ?_assertThrow(
+        inconsistent,
+        to_tagged_dfa(
+          [{2, [{$a, $a}], 4},
+           {3, [{$a, $a}], 4}],
+          dict:from_list([{1,[{1,2},{2,3}]}]),
+          [4]))
+].
 
 -endif.

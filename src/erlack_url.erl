@@ -39,3 +39,15 @@ to_hex(X) when 0 =< X, X =< 9 ->
     $0 + X;
 to_hex(X) when 10 =< X, X =< 15 ->
     $A + X - 10.
+
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+decode_test() ->
+    ?assertEqual(<<"a0">>, decode(<<"a%30">>)).
+
+encode_test() ->
+    ?assertEqual(<<"a%3F">>, encode(<<"a?">>)).
+
+-endif.

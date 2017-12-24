@@ -85,11 +85,8 @@ encode_range(X, Y, Head, [{Bits, Prefix, Mask}|Rest]) ->
                         []
                 end;
        true ->
-            if X =< Y ->
-                    encode_range(X band Mask, Y band Mask, Head ++ [(X bsr Bits) bor Prefix], Rest);
-               true ->
-                    []
-            end
+            true = X =< Y,
+            encode_range(X band Mask, Y band Mask, Head ++ [(X bsr Bits) bor Prefix], Rest)
     end.
 
 full_range(0, []) ->
@@ -168,7 +165,7 @@ encode_range_test_() ->
      %%   X  Y|
      ?_assertEqual(
         [[16#C3, {set, [{16#82, 16#BF}]}]], encode_range(16#C2, 16#FF)),
-     
+
      %%   X |  Y|
      ?_assertEqual(
         [[{set, [{16#C3, 16#C5}]}, {set, [{16#80, 16#BF}]}],
@@ -206,10 +203,13 @@ encode_ranges_test_() ->
 
 
 encode_test_() ->
-    [?_assertEqual([[16#7f]], encode([[16#7f]])),
+    [?_assertEqual([[{repeat, 1, 2, 16#7f}]], encode([[{repeat, 1, 2, 16#7f}]])),
+     ?_assertEqual([[16#7f]], encode([[{group, [[16#7f]]}]])),
+     ?_assertEqual([[16#7f]], encode([[16#7f]])),
      ?_assertEqual([[16#C2, 16#80]], encode([[16#80]])),
      ?_assertEqual([[16#E0, 16#A0, 16#80]], encode([[16#800]])),
      ?_assertEqual([[16#F0, 16#90, 16#80, 16#80]], encode([[16#10000]])),
+     ?_assertEqual([], encode([[{set, [{16#7f, 16#00}]}]])),
      ?_assertEqual([[16#7f]], encode([[{set, [{16#7f, 16#7f}]}]])),
      ?_assertEqual([[16#C2, 16#80]], encode([[{set, [{16#80,16#80}]}]])),
      ?_assertEqual([[16#E0, 16#A0, 16#80]], encode([[{set, [{16#800,16#800}]}]])),

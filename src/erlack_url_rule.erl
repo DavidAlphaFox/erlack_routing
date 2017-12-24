@@ -1,6 +1,6 @@
 -module(erlack_url_rule).
 
--compile({parse_transform, erlack_peg}).
+-compile({parse_transform, erlack_pgen}).
 
 -export([parse/1]).
 
@@ -53,8 +53,6 @@ name([H|S])
 
 -rule(name_tail/1).
 
-name_tail([]) ->
-    {ok, [], []};
 name_tail([H|S])
   when $a =< H, H =< $z; $0 =< H, H =< $9; H =:= $_ ->
     {ok, T, S1} = name_tail(S),
@@ -69,6 +67,7 @@ parse_test_() ->
     [?_assertEqual({ok, []}, parse("")),
      ?_assertEqual({ok, ["/index.html"]}, parse("/index.html")),
      ?_assertEqual({ok, ["/posts/", {id,integer}, "/"]}, parse("/posts/{id:integer}/")),
+     ?_assertEqual({ok,["\\"]}, parse("\\\\")),
      ?_assertEqual(error, parse("{"))].
 
 -endif.
